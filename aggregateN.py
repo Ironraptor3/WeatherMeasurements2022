@@ -1,8 +1,10 @@
+'''Run from the command line, combines rows of a csv by summation or averaging'''
+
 import argparse
 import sys
 
 def main(filein, args):
-
+    '''Runs aggregate function'''
     row = 0
     placeholder = []
     
@@ -14,17 +16,20 @@ def main(filein, args):
         else:
             values = line.strip('\n').split(',')
             endcol = len(values)
-            if args.endcol > 0:
+            if args.endcol > 0: # endcol > 0: see whether values or endcol is smaller
                 endcol = min(args.endcol, endcol)
             if (row-args.startrow) % args.grouprows == 0:
+                # First row in grouping: replace / init placeholder
                 placeholder = values
                 for c in range(args.startcol, endcol):
                     placeholder[c] = float(placeholder[c])
             else:
                 for c in range(args.startcol, endcol):
+                    # Update placeholder values
                     placeholder[c] += float(values[c])
-                
+
                 if (row-args.startrow) % args.grouprows == (args.grouprows-1):
+                    # Last row in grouping, push to fileout
                     for c in range(args.startcol, endcol):
                         # Average or sum
                         placeholder[c] = str(placeholder[c] / 
@@ -33,6 +38,7 @@ def main(filein, args):
         row+=1
 
 def feed_main():
+    '''Set up main by parsing arguments'''
     parser = argparse.ArgumentParser()
     parser.add_argument('--filein', required=True, action='store',
                         help='Path to data file input')
@@ -55,7 +61,7 @@ def feed_main():
     args = parser.parse_args()
 
     close = False
-    if isinstance(args.fileout, str):
+    if isinstance(args.fileout, str): # Open the file if necessary
         args.fileout = open(args.fileout, 'w')
         close = True
     with open(args.filein, 'r') as filein:

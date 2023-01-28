@@ -1,11 +1,14 @@
+'''Converts a tsv to a csv'''
 import argparse
 import sys
 
 def main(filein, args):
+    '''Performs main functionality'''
     for line in filein:
         args.fileout.write(line.replace('\t', ',')) # Separate on commas
 
 def feed_main():
+    '''Sets up main by parsing arguments'''
     parser = argparse.ArgumentParser()
     parser.add_argument('--filein', required=True, action='store',
                         help='Path to data file input')
