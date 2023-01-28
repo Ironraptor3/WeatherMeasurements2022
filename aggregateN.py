@@ -1,38 +1,68 @@
+import argparse
 import sys
 
-startRow = 52 # First full day
-startCol = 1 # Second column (After date)
-
-def main(filein, fileout, n):
+def main(filein, args):
 
     row = 0
     placeholder = []
     
     for line in filein:
-        if row == 0:
-            fileout.write(line) # Write header
-        elif row < startRow:
+        if row == 0 or (args.endrow > 0 and row >= args.endrow):
+            args.fileout.write(line) # Write header / rest of file
+        elif row < args.startrow:
             pass # Cut off for convenience
         else:
             values = line.strip('\n').split(',')
-            if (row-startRow) % n == 0:
+            endcol = len(values)
+            if args.endcol > 0:
+                endcol = min(args.endcol, endcol)
+            if (row-args.startrow) % args.grouprows == 0:
                 placeholder = values
-                for c in range(startCol, len(values)):
+                for c in range(args.startcol, endcol):
                     placeholder[c] = float(placeholder[c])
             else:
-                print(values)
-                for c in range(startCol, len(values)):
-                    print(float(values[c]))
+                for c in range(args.startcol, endcol):
                     placeholder[c] += float(values[c])
                 
-                if (row-startRow) % n == (n-1):
-                    for c in range(startCol, len(values)):
-                        placeholder[c] = str( placeholder[c] / n) # / n for average
-                    fileout.write(','.join(placeholder) + '\n')
+                if (row-args.startrow) % args.grouprows == (args.grouprows-1):
+                    for c in range(args.startcol, endcol):
+                        # Average or sum
+                        placeholder[c] = str(placeholder[c] / 
+                                             (args.grouprows if args.average else 1))
+                    args.fileout.write(','.join(placeholder) + '\n')
         row+=1
-    
+
+def feed_main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--filein', required=True, action='store',
+                        help='Path to data file input')
+    parser.add_argument('--fileout', action='store', default=sys.stdout,
+                        help='Path to data file output')
+    parser.add_argument('--startrow', action='store', type=int, default=1,
+                        help='The row to start at. First full day at 52')
+    parser.add_argument('--startcol', action='store', type=int, default=1,
+                        help='The column to start at')
+    parser.add_argument('--endrow', action='store', type=int, default=-1,
+                        help='The row to end at; -1 for end of the file. \
+                              3404 is the end of 5 minute intervals')
+    parser.add_argument('--endcol', action='store', type=int, default=-1,
+                        help='The column to end at, -1 for last column')
+    parser.add_argument('--grouprows', action='store', type=int, default=2,
+                        help='The number of rows to group together. \
+                              144-10 minute intervals in a day')
+    parser.add_argument('--average', action='store_true', default=False,
+                        help='Specify to average rows instead of add them')
+    args = parser.parse_args()
+
+    close = False
+    if isinstance(args.fileout, str):
+        args.fileout = open(args.fileout, 'w')
+        close = True
+    with open(args.filein, 'r') as filein:
+        main(filein, args)
+    if close:
+        args.fileout.close()
+
+ 
 if __name__ == "__main__":
-    if len(sys.argv) > 3:
-        with open(sys.argv[1], 'r') as filein:
-            with open(sys.argv[2], 'w') as fileout:
-                main(filein, fileout, int(sys.argv[3]))
+    feed_main()
