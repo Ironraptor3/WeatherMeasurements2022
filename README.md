@@ -2,7 +2,7 @@ This code is for research with Professor Bartholomew for weather data in several
 
 Procedure Used:
 - Download the files as a .tsv (Tab Separated Values)
-- `python fix_tsv.py -h` to see commands for removeCol0
+- `python fix_tsv.py -h` to see commands for fix_tsv
 - `python fix_tsv.py --filein <path_to_data.tsv> --fileout <AAA.csv>`
   - This will remove the index column and remove weirdness that occurs later
   - This will convert to a .csv (Comma Separated Values), a much nicer format
