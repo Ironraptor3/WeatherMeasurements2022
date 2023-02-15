@@ -22,11 +22,17 @@ def main(filein, args):
                 # First row in grouping: replace / init placeholder
                 placeholder = values
                 for c in range(args.startcol, endcol):
-                    placeholder[c] = float(placeholder[c])
+                    try:
+                        placeholder[c] = float(placeholder[c])
+                    except:
+                        placeholder[c] = 0.0
             else:
                 for c in range(args.startcol, endcol):
                     # Update placeholder values
-                    placeholder[c] += float(values[c])
+                    try:
+                        placeholder[c] += float(values[c])
+                    except:
+                        pass
 
                 if (row-args.startrow) % args.grouprows == (args.grouprows-1):
                     # Last row in grouping, push to fileout
